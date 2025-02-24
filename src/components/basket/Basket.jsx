@@ -24,20 +24,38 @@ const Basket = () => {
 
   // Get the authenticated user from Supabase
   useEffect(() => {
+    // Function to fetch user data from supabase
     const fetchUser = async () => {
-      const { data, error } = await supabase.auth.getUser();
-      if (!error) setUser(data.user);
+      const userData = await supabase.getUser();
+  
+      return userData;
     };
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+  
+    // Listen for changes in authentication state
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session) {
-        setUser(session.user);
+        // Fetch user data after session is established
+        const userData = await fetchUser();
+        
+        // Merge session.user and userData
+        if (userData) {
+          setUser({ ...session.user, ...userData });
+        } else {
+          setUser(session.user); // Only session.user if userData is unavailable
+        }
       } else {
         setUser(null);
       }
     });
   
-    fetchUser();
+    // Fetch user data initially
+    fetchUser().then((userData) => {
+      if (userData) {
+        setUser(userData); // Set user if userData is available
+      }
+    });
   
+    // Cleanup listener on component unmount
     return () => {
       authListener.subscription.unsubscribe();
     };

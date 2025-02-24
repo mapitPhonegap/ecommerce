@@ -167,23 +167,26 @@ function* authSaga({ type, payload }) {
         return;
       }
 
-      const { data, error } = yield call(supabase.getUser, payload.id);
+      const data = yield call(supabase.getSingleUser, payload.id);
 
-      if (error) {
-        yield put({ type: ON_AUTHSTATE_FAIL });
-        return;
-      }
-
-      const user = data?.user || payload; // Use the fetched user data
+      const user = data || payload; // Use the fetched user data
+      const userRole = user.role || "USER"; // Default to "USER" if undefined
 
       yield put(setProfile(user));
       yield put(setBasketItems(user.basket || []));
       yield put(signInSuccess({
         user: payload,
         id: payload.id,
-        role: user.role || "USER",
+        role: userRole,
         provider: payload?.provider || "email"
       }));
+      if (userRole === "ADMIN") {
+        console.log("Redirecting to /admin/add...");
+        history.push("/admin/dashboard"); // Ensure you have history set up correctly
+      } else {
+        console.log("Redirecting to homepage...");
+        history.push("/");
+      }
 
       console.log("Redirecting to homepage...");
       break;

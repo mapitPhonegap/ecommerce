@@ -31,9 +31,9 @@ supabase.auth.onAuthStateChange((event, session) => {
     setTimeout(() => {
       const authState = store.getState().auth || {};
       console.log("Updated Redux Store (auth):", store.getState().auth);
-      if (authState.isAuthenticated) {
-        window.location.href = "/";
-      }
+      // if (authState.isAuthenticated) {
+      //   history.push('/');
+      // }
     }, 500);
   } else if (event !== "INITIAL_SESSION") { // Avoid resetting on initial session check
     console.log("Dispatching ON_AUTHSTATE_FAIL");

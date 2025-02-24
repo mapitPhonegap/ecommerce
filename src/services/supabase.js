@@ -41,13 +41,33 @@ class SupabaseService {
     return this.auth.resetPasswordForEmail(email);
   };
 
-  getUser= async (id) => {
-    return this.db.from('users').select('*').eq('id', id).single();
+  getSingleUser = async (id) => {
+    const { data, error } = await this.db.from("users").select("*").eq("id", id).single();
+    
+    if (error) {
+      console.error("Error fetching user data:", error.message);
+      return null;
+    }
+  
+    if (!data) {
+      console.error("User not found");
+      return null;
+    }
+  
+    return data;
   };
   
-  getCurrentUser = async () => {
-    return this.auth.getUser();
-  }
+  getUser = async () => {
+    const { data: authUser, error: authError } = await this.auth.getUser();
+  
+    if (authError || !authUser?.user) {
+      console.error("Error fetching auth user:", authError);
+      return null;
+    }
+  
+    const customUser = await this.getSingleUser(authUser.user.id);
+    return { ...authUser.user, ...customUser };  // 🔥 Merging user data correctly
+  };
   
   addUser = async (userData) => {
     if (!userData || typeof userData !== 'object') {
