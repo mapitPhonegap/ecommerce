@@ -6,7 +6,7 @@ import {
   SIGNIN_WITH_GITHUB, SIGNIN_WITH_GOOGLE,
   SIGNOUT, SIGNUP
 } from '@/constants/constants';
-import { SIGNIN as ROUTE_SIGNIN } from '@/constants/routes';
+import { SIGNIN as ROUTE_SIGNIN, ADMIN_DASHBOARD } from '@/constants/routes';
 import defaultAvatar from '@/images/defaultAvatar.jpg';
 import defaultBanner from '@/images/defaultBanner.jpg';
 import { call, put } from 'redux-saga/effects';
@@ -182,13 +182,11 @@ function* authSaga({ type, payload }) {
       }));
       if (userRole === "ADMIN") {
         console.log("Redirecting to /admin/add...");
-        history.push("/admin/dashboard"); // Ensure you have history set up correctly
+        history.push(ADMIN_DASHBOARD); // Ensure you have history set up correctly
       } else {
         console.log("Redirecting to homepage...");
         history.push("/");
       }
-
-      console.log("Redirecting to homepage...");
       break;
     }
     case ON_AUTHSTATE_FAIL: {

@@ -20,6 +20,23 @@ import {
   removeProductSuccess,
   searchProductSuccess
 } from '../actions/productActions';
+import { v4 as uuidv4 } from "uuid";
+
+const uploadImage = async (key, folder, file) => {
+  if (!supabase) {
+    console.error("Supabase is not initialized properly.");
+    return null;
+  }
+  
+  const filePath = `${folder}/${key}`;
+  const data = await supabase.storeImage('products', filePath, file);
+  return supabase.getPublicUrl('products', filePath);
+};
+
+const deleteImage = async (filePath) => {
+  await supabase.removeImage('products', filePath);
+};
+
 
 function* initRequest() {
   yield put(setLoading(true));
@@ -45,12 +62,11 @@ function* productSaga({ type, payload }) {
         const state = yield select();
         const result = yield call(supabase.getProducts, payload);
 
-        if (result.products.length === 0) {
+        if (result.length === 0) {
           handleError('No items found.');
         } else {
           yield put(getProductsSuccess({
-            products: result.products,
-            lastKey: result.lastKey ? result.lastKey : state.products.lastRefKey,
+            products: result,
             total: result.total ? result.total : state.products.total
           }));
           yield put(setRequestStatus(''));
@@ -63,142 +79,145 @@ function* productSaga({ type, payload }) {
       }
       break;
 
-    case ADD_PRODUCT: {
-      try {
-        yield initRequest();
-
-        const { imageCollection } = payload;
-        const key = yield call(supabase.generateKey);
-        const downloadURL = yield call(supabase.storeImage, key, 'products', payload.image);
-        const image = { id: key, url: downloadURL };
-        let images = [];
-
-        if (imageCollection.length !== 0) {
-          const imageKeys = yield all(imageCollection.map(() => supabase.generateKey));
-          const imageUrls = yield all(imageCollection.map((img, i) => supabase.storeImage(imageKeys[i](), 'products', img.file)));
-          images = imageUrls.map((url, i) => ({
-            id: imageKeys[i](),
-            url
-          }));
-        }
-
-        const product = {
-          ...payload,
-          image: downloadURL,
-          imageCollection: [image, ...images]
-        };
-
-        yield call(supabase.addProduct, key, product);
-        yield put(addProductSuccess({
-          id: key,
-          ...product
-        }));
-        yield handleAction(ADMIN_PRODUCTS, 'Item succesfully added', 'success');
-        yield put(setLoading(false));
-      } catch (e) {
-        yield handleError(e);
-        yield handleAction(undefined, `Item failed to add: ${e?.message}`, 'error');
-      }
-      break;
-    }
-    case EDIT_PRODUCT: {
-      try {
-        yield initRequest();
-
-        const { image, imageCollection } = payload.updates;
-        let newUpdates = { ...payload.updates };
-
-        if (image.constructor === File && typeof image === 'object') {
-          try {
-            yield call(supabase.deleteImage, payload.id);
-          } catch (e) {
-            console.error('Failed to delete image ', e);
+      case ADD_PRODUCT: {
+        try {
+          yield initRequest();
+      
+          const { imageCollection } = payload;
+          const key = uuidv4();
+          const downloadURL = yield call(uploadImage, key, "uploads", payload.image);
+          
+          const image = { id: key, url: downloadURL };
+          let images = [];
+      
+          if (imageCollection.length !== 0) {
+            const imageKeys = yield all(imageCollection.map(() => uuidv4()));
+            const imageUrls = yield all(imageCollection.map((img, i) => uploadImage(imageKeys[i], "uploads", img.file)));
+            images = imageUrls.map((url, i) => ({
+              id: imageKeys[i],
+              url
+            }));
+            
           }
-
-          const url = yield call(supabase.storeImage, payload.id, 'products', image);
-          newUpdates = { ...newUpdates, image: url };
-        }
-
-        if (imageCollection.length > 1) {
-          const existingUploads = [];
-          const newUploads = [];
-
-          imageCollection.forEach((img) => {
-            if (img.file) {
-              newUploads.push(img);
-            } else {
-              existingUploads.push(img);
-            }
-          });
-
-          const imageKeys = yield all(newUploads.map(() => supabase.generateKey));
-          const imageUrls = yield all(newUploads.map((img, i) => supabase.storeImage(imageKeys[i](), 'products', img.file)));
-          const images = imageUrls.map((url, i) => ({
-            id: imageKeys[i](),
-            url
-          }));
-          newUpdates = { ...newUpdates, imageCollection: [...existingUploads, ...images] };
-        } else {
-          newUpdates = {
-            ...newUpdates,
-            imageCollection: [{ id: new Date().getTime(), url: newUpdates.image }]
+      
+          const product = {
+            ...payload,
+            image: downloadURL,
+            imageCollection: [image, ...images]
           };
-          // add image thumbnail to image collection from newUpdates to
-          // make sure you're adding the url not the file object.
+      
+          const data = yield call(supabase.addProduct, [{ id: key, ...product }]);
+      
+          yield put(addProductSuccess({ id: key, ...product }));
+          yield handleAction(ADMIN_PRODUCTS, "Item successfully added", "success");
+          yield put(setLoading(false));
+        } catch (e) {
+          yield handleError(e);
+          yield handleAction(undefined, `Item failed to add: ${e?.message}`, "error");
         }
-
-        yield call(supabase.editProduct, payload.id, newUpdates);
-        yield put(editProductSuccess({
-          id: payload.id,
-          updates: newUpdates
-        }));
-        yield handleAction(ADMIN_PRODUCTS, 'Item succesfully edited', 'success');
-        yield put(setLoading(false));
-      } catch (e) {
-        yield handleError(e);
-        yield handleAction(undefined, `Item failed to edit: ${e.message}`, 'error');
+        break;
       }
-      break;
-    }
-    case REMOVE_PRODUCT: {
-      try {
-        yield initRequest();
-        yield call(supabase.removeProduct, payload);
-        yield put(removeProductSuccess(payload));
-        yield put(setLoading(false));
-        yield handleAction(ADMIN_PRODUCTS, 'Item succesfully removed', 'success');
-      } catch (e) {
-        yield handleError(e);
-        yield handleAction(undefined, `Item failed to remove: ${e.message}`, 'error');
+      
+      // --- EDIT PRODUCT ---
+      case EDIT_PRODUCT: {
+        try {
+          yield initRequest();
+      
+          const { image, imageCollection } = payload.updates;
+          let newUpdates = { ...payload.updates };
+      
+          if (image instanceof File) {
+            try {
+              yield call(deleteImage, `products/${payload.id}`);
+            } catch (e) {
+              console.error("Failed to delete image ", e);
+            }
+      
+            const url = yield call(uploadImage, payload.id, "products", image);
+            newUpdates = { ...newUpdates, image: url };
+          }
+      
+          if (imageCollection.length > 1) {
+            const existingUploads = [];
+            const newUploads = [];
+      
+            imageCollection.forEach((img) => {
+              if (img.file) {
+                newUploads.push(img);
+              } else {
+                existingUploads.push(img);
+              }
+            });
+      
+            const imageKeys = yield all(newUploads.map(() => uuidv4()));
+            const imageUrls = yield all(newUploads.map((img, i) => uploadImage(imageKeys[i], "products", img.file)));
+            const images = imageUrls.map((url, i) => ({
+              id: imageKeys[i],
+              url
+            }));
+            newUpdates = { ...newUpdates, imageCollection: [...existingUploads, ...images] };
+          } else {
+            newUpdates = {
+              ...newUpdates,
+              imageCollection: [{ id: new Date().getTime(), url: newUpdates.image }]
+            };
+          }
+      
+          const data = yield call(supabase.editProduct, newUpdates, { match: { id: payload.id } });
+      
+          yield put(editProductSuccess({ id: payload.id, updates: newUpdates }));
+          yield handleAction(ADMIN_PRODUCTS, "Item successfully edited", "success");
+          yield put(setLoading(false));
+        } catch (e) {
+          yield handleError(e);
+          yield handleAction(undefined, `Item failed to edit: ${e.message}`, "error");
+        }
+        break;
       }
-      break;
-    }
-    case SEARCH_PRODUCT: {
-      try {
-        yield initRequest();
-        // clear search data
-        yield put(clearSearchState());
-
-        const state = yield select();
-        const result = yield call(supabase.searchProducts, payload.searchKey);
-
-        if (result.products.length === 0) {
-          yield handleError({ message: 'No product found.' });
+      
+      // --- REMOVE PRODUCT ---
+      case REMOVE_PRODUCT: {
+        try {
+          yield initRequest();
+          yield call(supabase.removeProduct, { match: { id: payload } });
+          yield put(removeProductSuccess(payload));
+          yield put(setLoading(false));
+          yield handleAction(ADMIN_PRODUCTS, "Item successfully removed", "success");
+        } catch (e) {
+          yield handleError(e);
+          yield handleAction(undefined, `Item failed to remove: ${e.message}`, "error");
+        }
+        break;
+      }
+      
+      // --- SEARCH PRODUCT ---
+      case SEARCH_PRODUCT: {
+        try {
+          yield initRequest();
           yield put(clearSearchState());
-        } else {
-          yield put(searchProductSuccess({
-            products: result.products,
-            lastKey: result.lastKey ? result.lastKey : state.products.searchedProducts.lastRefKey,
-            total: result.total ? result.total : state.products.searchedProducts.total
-          }));
-          yield put(setRequestStatus(''));
+      
+          const state = yield select();
+          const { data, error } = yield call(supabase.searchProducts, payload.searchKey);
+          
+          if (error) throw error;
+      
+          if (data.items.total === 0) {
+            yield handleError({ message: "No product found." });
+            yield put(clearSearchState());
+          } else {
+            yield put(searchProductSuccess({
+              products: data.items,
+              lastKey: state.products.searchedProducts.lastRefKey,
+              total: state.products.searchedProducts.total
+            }));
+            yield put(setRequestStatus(""));
+          }
+          yield put(setLoading(false));
+        } catch (e) {
+          yield handleError(e);
         }
-        yield put(setLoading(false));
-      } catch (e) {
-        yield handleError(e);
+        break;
       }
-      break;
-    }
     default: {
       throw new Error(`Unexpected action type ${type}`);
     }

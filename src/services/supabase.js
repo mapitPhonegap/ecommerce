@@ -127,52 +127,64 @@ class SupabaseService {
   };
 
   getProducts = async (lastRefKey) => {
-    let query = this.db.from("products").select("*").order("id").limit(12);
+    let query = this.db
+      .from("products")
+      .select("*", { count: "exact" }) // Fetch products + total count
+      .order("id")
+      .limit(12);
 
     if (lastRefKey) {
       query = query.gt("id", lastRefKey);
     }
 
-    const { data, error } = await query;
+    const { data, count, error } = await query;
     if (error) throw error;
-    return data;
+    return {
+      items: data, // The product array (max 12 items)
+      total: count, // The total number of products
+    };
   };
 
   searchProducts = async (searchKey) => {
-    const { data, error } = await this.db
+    const { data, count, error } = await this.db
       .from("products")
-      .select("*")
-      .ilike("name_lower", `%${searchKey}%`)
+      .select("*", { count: "exact" }) // Fetch products + total count
+      .ilike("name", `%${searchKey}%`)
       .limit(12);
 
     if (error) throw error;
-    return data;
+    return {items: data, // The product array (max 12 items)
+      total: count
+    };
   };
 
   getFeaturedProducts = async (itemsCount = 12) => {
-    const { data, error } = await this.db
-      .from("products")
+    const { data, count, error } = await this.db
+      .from("products", { count: "exact" })
       .select("*")
       .eq("isFeatured", true)
       .limit(itemsCount);
 
     if (error) throw error;
-    return data;
+    return {items: data, total: count};
   };
 
   getRecommendedProducts = async (itemsCount = 12) => {
-    const { data, error } = await this.db
-      .from("products")
+    const { data, count, error } = await this.db
+      .from("products",  { count: "exact" })
       .select("*")
       .eq("isRecommended", true)
       .limit(itemsCount);
 
     if (error) throw error;
-    return data;
+    return {
+      items: data,
+      total: count
+    };
   };
 
   addProduct = async (product) => {
-    const { data, error } = await this.db.from("products").insert([product]);
+    const { data, error } = await this.db.from("products").insert([...product]);
     if (error) throw error;
     return data;
   };
@@ -190,10 +202,10 @@ class SupabaseService {
 
   // STORAGE ACTIONS ------------
 
-  storeImage = async (folder, file) => {
+  storeImage = async (folder, filePath, file) => {
     const { data, error } = await this.supabase.storage
       .from(folder)
-      .upload(`${Date.now()}-${file.name}`, file);
+      .upload(filePath, file, { upsert: true });
 
     if (error) throw error;
     return data.path;
@@ -203,7 +215,13 @@ class SupabaseService {
     const { error } = await this.supabase.storage.from(folder).remove([filePath]);
     if (error) throw error;
   };
-}
 
+
+  getPublicUrl = async (folder, filePath) => {
+    const { data: publicUrlData } = this.supabase.storage.from(folder).getPublicUrl(filePath);
+
+    return publicUrlData.publicUrl;
+  }
+}
 const supabaseInstance = new SupabaseService();
 export default supabaseInstance;

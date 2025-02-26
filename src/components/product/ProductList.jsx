@@ -4,7 +4,7 @@ import PropType from 'prop-types';
 import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { setLoading } from '@/redux/actions/miscActions';
-import { getProducts } from '@/redux/actions/productActions';
+import { getProducts, resetProducts } from '@/redux/actions/productActions';
 
 const ProductList = (props) => {
   const {
@@ -14,6 +14,7 @@ const ProductList = (props) => {
   const dispatch = useDispatch();
 
   const fetchProducts = () => {
+    dispatch(resetProducts()); // Reset state before fetching
     setFetching(true);
     dispatch(getProducts(products.lastRefKey));
   };

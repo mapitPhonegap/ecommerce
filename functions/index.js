@@ -11,6 +11,6 @@ exports.lowercaseProductName = functions.firestore.document('/products/{document
 
         const lowercaseName = name.toLowerCase();
 
-        return snap.ref.set({ name_lower: lowercaseName }, { merge: true });
+        return snap.ref.set({ name: lowercaseName }, { merge: true });
     });
 

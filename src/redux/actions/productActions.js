@@ -7,6 +7,7 @@ import {
   EDIT_PRODUCT_SUCCESS,
   GET_PRODUCTS,
   GET_PRODUCTS_SUCCESS,
+  GET_PRODUCTS_REQUEST,
   REMOVE_PRODUCT,
   REMOVE_PRODUCT_SUCCESS,
   SEARCH_PRODUCT,
@@ -17,6 +18,10 @@ export const getProducts = (lastRef) => ({
   type: GET_PRODUCTS,
   payload: lastRef
 });
+
+export const resetProducts = () => ({
+  type: GET_PRODUCTS_REQUEST 
+})
 
 export const getProductsSuccess = (products) => ({
   type: GET_PRODUCTS_SUCCESS,
