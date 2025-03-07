@@ -159,28 +159,25 @@ class SupabaseService {
   };
 
   getFeaturedProducts = async (itemsCount = 12) => {
-    const { data, count, error } = await this.db
-      .from("products", { count: "exact" })
+    const { data, error } = await this.db
+      .from("products")
       .select("*")
       .eq("isFeatured", true)
       .limit(itemsCount);
 
     if (error) throw error;
-    return {items: data, total: count};
+    return data;
   };
 
   getRecommendedProducts = async (itemsCount = 12) => {
-    const { data, count, error } = await this.db
-      .from("products",  { count: "exact" })
+    const { data, error } = await this.db
+      .from("products")
       .select("*")
       .eq("isRecommended", true)
       .limit(itemsCount);
 
     if (error) throw error;
-    return {
-      items: data,
-      total: count
-    };
+    return data;
   };
 
   addProduct = async (product) => {

@@ -1,5 +1,5 @@
-export { default as AdminNavigation } from './AdminNavigation';
-export { default as AdminSideBar } from './AdminSidePanel';
+export { default as AdminNavigation } from '../admin/AdminNavigation';
+export { default as AdminSideBar } from '../admin/AdminSidePanel';
 export { default as Badge } from './Badge';
 export { default as Boundary } from './Boundary';
 export { default as ColorChooser } from './ColorChooser';

@@ -21,15 +21,9 @@ const useFeaturedProducts = (itemsCount) => {
           setLoading(false);
         }
       } else {
-        const items = [];
-
-        docs.forEach((snap) => {
-          const data = snap.data();
-          items.push({ id: snap.ref.id, ...data });
-        });
-
+      
         if (didMount) {
-          setFeaturedProducts(items);
+          setFeaturedProducts(docs);
           setLoading(false);
         }
       }
@@ -46,7 +40,6 @@ const useFeaturedProducts = (itemsCount) => {
       fetchFeaturedProducts();
     }
   }, []);
-
   return {
     featuredProducts, fetchFeaturedProducts, isLoading, error
   };

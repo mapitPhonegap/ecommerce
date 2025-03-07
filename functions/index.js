@@ -5,7 +5,7 @@ admin.initializeApp();
 
 exports.lowercaseProductName = functions.firestore.document('/products/{documentId}')
     .onCreate((snap, context) => {
-        const name = snap.data().name;
+        const name = snap.name;
 
         functions.logger.log('Lowercasing product name', context.params.documentId, name);
 

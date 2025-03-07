@@ -1,5 +1,5 @@
 import * as Route from '@/constants/routes';
-import logo from '@/images/logo-full.png';
+import logo from '@/images/taptag logo full.png';
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 

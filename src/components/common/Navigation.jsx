@@ -1,7 +1,7 @@
 /* eslint-disable indent */
 import { FilterOutlined, ShoppingOutlined } from '@ant-design/icons';
 import * as ROUTE from '@/constants/routes';
-import logo from '@/images/logo-full.png';
+import logo from '@/images/taptag logo full.png';
 import React, { useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import {
@@ -18,6 +18,10 @@ import supabase from '@/services/supabase';
 const Navigation = () => {
   const navbar = useRef(null);
   const { pathname } = useLocation();
+  const { isAuthenticating, profile } = useSelector((state) => ({
+    isAuthenticating: state.app.isAuthenticating,
+    profile: state.profile
+  }));
 
   const store = useSelector((state) => ({
     basketLength: state.basket.length,
@@ -107,18 +111,12 @@ const Navigation = () => {
           </BasketToggle>
         </li>
         {store.user ? (
-          <li className="navigation-menu-item">
-            {/* Display the user's name if logged in */}
-            <span className="username">{store.user.fullname}</span>
-            {/* You can also add a Sign Out button here */}
-            <button
-              className="button button-small button-muted margin-left-s"
-              onClick={onClickSignOut} // Handle sign out action
-              type="button"
-            >
-              Sign Out
-            </button>
-          </li>
+           <li className="navigation-menu-item">
+                   <UserAvatar
+                     isAuthenticating={isAuthenticating}
+                     profile={profile}
+                   />
+                 </li>
         ) : (
           <li className="navigation-action">
             {pathname !== ROUTE.SIGNUP && (
