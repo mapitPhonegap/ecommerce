@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
-import { Card, CardContent } from "@/components/common/card";
+import { Card, CardContent } from "@/components/common/Card";
 import { FaPhone, FaEnvelope, FaGlobe, FaInstagram, FaFacebook, FaLinkedin, FaDownload } from "react-icons/fa";
 import "daisyui/themes.css"; // Import DaisyUI
 import useContact from "@/hooks/useContact";
