@@ -9,6 +9,7 @@ export { default as Footer } from './Footer';
 export { default as ImageLoader } from './ImageLoader';
 export { default as MessageDisplay } from './MessageDisplay';
 export { default as MobileNavigation } from './MobileNavigation';
+export { default as Card } from './Card';
 export { default as Modal } from './Modal';
 export { default as Navigation } from './Navigation';
 export { default as Preloader } from './Preloader';
