@@ -41,6 +41,22 @@ class SupabaseService {
     return this.auth.resetPasswordForEmail(email);
   };
 
+  getNfcContact = async (id) => {
+    const { data, error } = await this.db.from("nfc_tag_contacts").select("*, users(avatar_url, name)").eq("tag_id", id).single();
+    
+    if (error) {
+      console.error("Error fetching nfc contact data:", error.message);
+      return null;
+    }
+  
+    if (!data) {
+      console.error("Nfc contact not found");
+      return null;
+    }
+  
+    return data;
+  };
+
   getSingleUser = async (id) => {
     const { data, error } = await this.db.from("users").select("*").eq("id", id).single();
     

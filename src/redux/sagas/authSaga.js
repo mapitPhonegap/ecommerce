@@ -162,16 +162,15 @@ function* authSaga({ type, payload }) {
     }
     case ON_AUTHSTATE_SUCCESS: {
       if (!payload?.id) {
-        console.error("ON AUTHSTATE_SUCCESS triggered but payload.id is undefined.");
+        console.error("ON_AUTHSTATE_SUCCESS triggered but payload.id is undefined.");
         yield put({ type: ON_AUTHSTATE_FAIL });
         return;
       }
-
+    
       const data = yield call(supabase.getSingleUser, payload.id);
-
-      const user = data || payload; // Use the fetched user data
+      const user = data || payload; // Use fetched user data if available
       const userRole = user.role || "USER"; // Default to "USER" if undefined
-
+    
       yield put(setProfile(user));
       yield put(setBasketItems(user.basket || []));
       yield put(signInSuccess({
@@ -180,12 +179,17 @@ function* authSaga({ type, payload }) {
         role: userRole,
         provider: payload?.provider || "email"
       }));
+    
+      // Retrieve intended route or default to home/admin dashboard
+      const intendedRoute = localStorage.getItem("intendedRoute") || "/";
+      localStorage.removeItem("intendedRoute"); // Clean up after redirect
+    
       if (userRole === "ADMIN") {
         console.log("Redirecting to /admin/add...");
-        history.push(ADMIN_DASHBOARD); // Ensure you have history set up correctly
+        history.push(ADMIN_DASHBOARD);
       } else {
-        console.log("Redirecting to homepage...");
-        history.push("/");
+        console.log(`Redirecting to ${intendedRoute}...`);
+        history.push(intendedRoute); // Redirect to last intended page
       }
       break;
     }

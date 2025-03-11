@@ -59,7 +59,12 @@ const Navigation = () => {
     ROUTE.CHECKOUT_STEP_3,
     ROUTE.SIGNIN,
     ROUTE.SIGNUP,
+    ROUTE.CONTACT,
     ROUTE.FORGOT_PASSWORD
+  ];
+
+  const publicPath = [
+    ROUTE.CONTACT
   ];
 
   if (store.user && store.user.role === 'ADMIN') {
@@ -72,7 +77,7 @@ const Navigation = () => {
         pathname={pathname}
       />
     );
-  }
+  }[9]
   return (
     <nav className="navigation" ref={navbar}>
       <div className="logo">

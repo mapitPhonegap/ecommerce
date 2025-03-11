@@ -65,3 +65,6 @@ export const EDIT_USER = 'EDIT_USER';
 export const LOADING = 'LOADING';
 export const IS_AUTHENTICATING = 'IS_AUTHENTICATING';
 export const SET_REQUEST_STATUS = 'SET_REQUEST_STATUS';
+export const GET_CONTACT = 'GET_CONTACT';
+export const GET_CONTACT_SUCCESS = 'GET_CONTACT_SUCCESS';
+export const SET_CONTACT = 'SET_CONTACT';
