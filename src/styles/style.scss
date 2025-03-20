@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 // ---------------------------
 // 00 - VENDORS
 
@@ -76,7 +78,7 @@
 
 // -- 404
 @import './5 - components/404/page-not-found';
-
+@import './5 - components/contact';
 
 
 // ---------------------------
@@ -85,3 +87,7 @@
 @import './6 - utils/state';
 @import './6 - utils/animation';
 @import './6 - utils/utils';
+
+@plugin "daisyui" {
+  themes: all;
+}

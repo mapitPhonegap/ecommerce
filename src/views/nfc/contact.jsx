@@ -1,84 +1,122 @@
-import React, { useState } from "react";
-import { useParams } from "react-router-dom";
-import { Card, CardContent } from "@/components/common/Card";
+import React, { useState, useEffect, useRef } from "react";
+import { useParams, } from "react-router-dom";
+import { Card, CardContent } from '@/components/common/Card';
 import { FaPhone, FaEnvelope, FaGlobe, FaInstagram, FaFacebook, FaLinkedin, FaDownload } from "react-icons/fa";
 import "daisyui/themes.css"; // Import DaisyUI
 import useContact from "@/hooks/useContact";
 
-const ContactPage = () => {
-  const { userId } = useParams();
-  const contact = useContact(userId);
-  const [theme, setTheme] = useState("light");
 
+const ContactPage = () => {
+  const { id } = useParams();
+  const { contact, loading, error } = useContact(id);
+  const containerRef = useRef(null); // Create a ref for the container
+
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.classList.add("loaded");
+    }
+  }, [contact]); // Run the effect when contact is updated
+
+  const themes = [
+    "light", "dark", "cupcake", "bumblebee", "emerald",
+    "corporate", "synthwave", "retro", "cyberpunk",
+    "valentine", "halloween", "garden", "forest",
+    "aqua", "lofi", "pastel", "fantasy", "wireframe",
+    "black", "luxury", "dracula", "cmyk", "autumn",
+    "business", "acid", "lemonade", "night", "coffee",
+    "winter"
+  ];
+  
+  const themeIcons = {
+    light: "☀️", dark: "🌙", cupcake: "🍰", cyberpunk: "🤖", dracula: "🦇",
+    bumblebee: "🐝", emerald: "💎", corporate: "🏢", synthwave: "🌌", retro: "📻",
+    valentine: "💖", halloween: "🎃", garden: "🌿", forest: "🌲", aqua: "💧",
+    lofi: "🎵", pastel: "🎨", fantasy: "🧚", wireframe: "🕸️", black: "⚫",
+    luxury: "💰", cmyk: "🎨", autumn: "🍂", business: "💼", acid: "🧪",
+    lemonade: "🍋", night: "🌙", coffee: "☕", winter: "❄️"
+  };
+  
+  const [theme, setTheme] = useState("light");
   const changeTheme = (newTheme) => {
     setTheme(newTheme);
     document.documentElement.setAttribute("data-theme", newTheme);
   };
 
+  const saveContactAsVCF = () => {
+    const vcfData = `
+BEGIN:VCARD
+VERSION:3.0
+FN:${contact.name}
+TEL:${contact.phone}
+EMAIL:${contact.email}
+URL:${contact.website}
+END:VCARD
+    `;
+
+    const blob = new Blob([vcfData], { type: 'text/vcard' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${contact.name || 'contact'}.vcf`;
+    link.click();
+  };
+
+  if (loading) {
+    return <div className="flex justify-center items-center h-screen text-xl">Loading...</div>;
+  }
+  if (error) return <p>Error: {error}</p>;
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-base-200 p-4">
-      <div className="flex space-x-2 mb-4">
-        <select onChange={(e) => changeTheme(e.target.value)} className="select select-bordered">
-          <option value="light">☀️ Light</option>
-          <option value="dark">🌙 Dark</option>
-          <option value="cupcake">🍰 Cupcake</option>
-          <option value="cyberpunk">🤖 Cyberpunk</option>
-          <option value="dracula">🦇 Dracula</option>
+    <div className="contact-page min-h-screen flex flex-col items-center justify-center bg-base-100">
+      <div className="flex space-x-2 mb-6">
+        <select
+          onChange={(e) => changeTheme(e.target.value)}
+          className="select select-bordered w-full max-w-xs h-auto" // Override height to auto
+        >
+          {themes.map((t) => (
+            <option key={t} value={t}>
+              {themeIcons[t] || "🎭"} {t.charAt(0).toUpperCase() + t.slice(1)}
+            </option>
+          ))}
         </select>
       </div>
-      <Card className="max-w-md w-full bg-base-100 p-6 rounded-2xl shadow-lg text-center">
-        <img
-          src={contact.avatar || "/src/images/defaultAvatar.jpg"}
-          alt="Profile"
-          className="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-neutral"
-        />
-        <h1 className="text-xl font-semibold text-primary">{contact.name || "John Doe"}</h1>
-        <p className="text-secondary">{contact.jobTitle || "Software Engineer"}</p>
-        
-        <button className="w-full mt-4 btn btn-primary flex items-center justify-center" onClick={() => window.location.href='/contact.vcf'}>
-          <FaDownload className="mr-2" /> Save Contact
-        </button>
-        
-        <CardContent className="mt-4 space-y-3">
-          {contact.phone && (
-            <div className="flex items-center space-x-2 text-neutral">
-              <FaPhone />
-              <a href={`tel:${contact.phone}`} className="hover:underline">{contact.phone}</a>
-            </div>
-          )}
-          {contact.email && (
-            <div className="flex items-center space-x-2 text-neutral">
-              <FaEnvelope />
-              <a href={`mailto:${contact.email}`} className="hover:underline">{contact.email}</a>
-            </div>
-          )}
-          {contact.website && (
-            <div className="flex items-center space-x-2 text-neutral">
-              <FaGlobe />
-              <a href={contact.website} target="_blank" className="hover:underline">{contact.website}</a>
-            </div>
-          )}
-        </CardContent>
-
-        <div className="mt-4 flex justify-center space-x-4 text-neutral">
-          {contact.instagram && (
-            <a href={contact.instagram} target="_blank" className="hover:text-pink-600">
-              <FaInstagram size={24} />
-            </a>
-          )}
-          {contact.facebook && (
-            <a href={contact.facebook} target="_blank" className="hover:text-blue-600">
-              <FaFacebook size={24} />
-            </a>
-          )}
-          {contact.linkedin && (
-            <a href={contact.linkedin} target="_blank" className="hover:text-blue-700">
-              <FaLinkedin size={24} />
-            </a>
-          )}
+        <div className="card bg-base-200 transition-colors duration-300 shadow-xl text-base-content">
+        <div className="card-header">
+            <img src={ contact.users?.avatar || "/src/images/profile-image-placeholder.jpg"} alt="Profile Image" className="profile-img"/>
         </div>
-      </Card>
+        <div className="card-body">
+            <p className="name">{contact.name || "-"}</p>
+            {contact.phone && (
+              <div className="flex items-center justify-center gap-2 text-xl ">
+                <FaPhone className="text-xl" />
+                <a href={`tel:${contact.phone}`} className="link link-primary">{contact.phone}</a>
+              </div>
+            )}
+            {contact.email && (
+              <div className="flex items-center justify-center gap-2 text-xl ">
+                <FaEnvelope className="text-xl" />
+                <a href={`mailto:${contact.email}`} className="link link-primary">{contact.email}</a>
+              </div>
+            )}
+            <p className="job">{contact.job_title}</p>
+        </div>
+          <div className="social-links">
+          {contact.website && (<a href={contact.website} className="!bg-primary fas fa-globe social-icon !text-white"></a>)}
+          {contact.facebook && (<a href={contact.facebook} className="!bg-primary fab fa-facebook social-icon !text-white"></a>)}
+          {contact.whatsapp && (<a href={contact.whatsapp} className="!bg-primary fab fa-whatsapp social-icon !text-white"></a>)}
+          {contact.instagram && (<a href={contact.instagram} className="!bg-primary fab fa-instagram social-icon !text-white"></a>)}
+          {contact.linkedin && (<a href={contact.linkedin} className="!bg-primary fab fa-linkedin social-icon !text-white"></a>)}
+
+          </div>
+        <div className="card-footer">
+            <button className="w-full mt-4 btn btn-primary flex items-center justify-center"   style={{ height: '50px' }}
+            onClick={saveContactAsVCF}>
+            <FaDownload className="mr-5" /> Save Contact
+          </button>
+        </div>
     </div>
+      </div>
+
+      
   );
 };
 

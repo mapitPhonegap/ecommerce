@@ -4,34 +4,38 @@ import { ADMIN_DASHBOARD, SIGNIN, SIGNUP } from '@/constants/routes';
 import PropType from 'prop-types';
 import React from 'react';
 import { connect } from 'react-redux';
-import { Redirect, Route } from 'react-router-dom';
+import { Redirect, Route, useLocation } from 'react-router-dom';
 
-const PublicRoute = ({
-  isAuth, role, component: Component, path, ...rest
-}) => (
-  <Route
-    {...rest}
-    // eslint-disable-next-line consistent-return
-    render={(props) => {
-      // eslint-disable-next-line react/prop-types
-      const { from } = props.location.state || { from: { pathname: '/' } };
+const PublicRoute = ({ isAuth, role, component: Component, path, ...rest }) => {
+  const location = useLocation();
+  const isContact = ['/contact'].some(route => location.pathname.startsWith(route));
 
-      if (isAuth && role === 'ADMIN') {
-        return <Redirect to={ADMIN_DASHBOARD} />;
-      }
+  return (
+    <Route
+      {...rest}
+      render={(props) => {
+        const { from } = props.location.state || { from: { pathname: '/' } };
 
-      if ((isAuth && role === 'USER') && (path === SIGNIN || path === SIGNUP)) {
-        return <Redirect to={from} />;
-      }
+        if (isAuth && role === 'ADMIN') {
+          return <Redirect to={ADMIN_DASHBOARD} />;
+        }
 
-      return (
-        <main className="content">
+        if ((isAuth && role === 'USER') && (path === SIGNIN || path === SIGNUP)) {
+          return <Redirect to={from} />;
+        }
+
+        return isContact ? (
           <Component {...props} />
-        </main>
-      );
-    }}
-  />
-);
+        ) : (
+          <main className="content">
+            <Component {...props} />
+          </main>
+        );
+      }}
+    />
+  );
+};
+
 
 PublicRoute.defaultProps = {
   isAuth: false,

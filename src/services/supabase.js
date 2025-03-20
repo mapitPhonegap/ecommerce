@@ -42,8 +42,7 @@ class SupabaseService {
   };
 
   getNfcContact = async (id) => {
-    const { data, error } = await this.db.from("nfc_tag_contacts").select("*, users(avatar_url, name)").eq("tag_id", id).single();
-    
+    const { data, error } = await this.db.from("nfc_tag_contacts").select("*, users(avatar, fullname)").eq("tag_id", id).limit(1).maybeSingle();
     if (error) {
       console.error("Error fetching nfc contact data:", error.message);
       return null;

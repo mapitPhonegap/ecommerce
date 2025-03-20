@@ -5,29 +5,29 @@ import { setContact } from "../redux/actions/contactAction"; // Import your Redu
 
 const useContact = (tagId) => {
   const dispatch = useDispatch();
-  const contact = useSelector((state) => state.contact?.[tagId] || {});
+  const contact = useSelector((state) => state.contact);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchContact = async () => {
-      if (!tagId) return;
-
-      const data = await supabase.getNfcContact(tagId);
-      console.log(data);
-      if (data) {
-        dispatch(setContact({ tagId, contact: {
-          ...data,
-          profilePicture: data.users?.avatar_url,
-          name: data.users?.name || data.name,
-        }}));
+      if (!tagId || contact?.name) return;
+      setLoading(true);
+      setError(null); // Reset error state
+      try {
+        const data = await supabase.getNfcContact(tagId);
+        dispatch(setContact({
+          ...data
+        }));
+      } catch (err) {
+        setError(err.message || "Failed to fetch contact");
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    };
-
+      };
     fetchContact();
-  }, [tagId, dispatch]);
-
-  return { contact, loading };
+  }, [tagId, dispatch, contact]);   
+  return { contact, loading, error };
 };
 
 export default useContact;

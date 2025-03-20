@@ -5,12 +5,23 @@ import { defineConfig } from 'vite';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    react(),
+    react()
   ],
+  css: {
+    postcss: './postcss.config.cjs',
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src')
     }
+  },
+  optimizeDeps: {
+    esbuildOptions: {
+      loader: {
+        '.js': 'jsx',
+        '.ts': 'tsx',
+      },
+    },
   },
   server: {
     port: 3000
