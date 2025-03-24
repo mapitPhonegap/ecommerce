@@ -27,11 +27,10 @@ function* profileSaga({ type, payload }) {
         const state = yield select();
         const { email, password } = payload.credentials;
         const { avatarFile, bannerFile } = payload.files;
-
+    
         yield put(setLoading(true));
-
-        // if email & password exist && the email has been edited
-        // update the email
+    
+        // Email update logic
         if (email && password && email !== state.profile.email) {
           yield call(supabase.updateEmail, password, email);
         }
@@ -44,21 +43,25 @@ function* profileSaga({ type, payload }) {
           yield call(supabase.updateProfile, state.auth.id, updates);
           yield put(updateProfileSuccess(updates));
         } else {
-          yield call(supabase.updateProfile, state.auth.id, payload.updates);
+          try {
+            yield call(supabase.updateProfile, state.auth.id, payload.updates);
+          } catch (updateError) {
+            console.error('Profile update failed:', updateError);
+          }
           yield put(updateProfileSuccess(payload.updates));
         }
-
-        yield put(setLoading(false));
         yield call(history.push, ACCOUNT);
+
         yield call(displayActionMessage, 'Profile Updated Successfully!', 'success');
       } catch (e) {
         console.log(e);
-        yield put(setLoading(false));
         if (e.code === 'auth/wrong-password') {
           yield call(displayActionMessage, 'Wrong password, profile update failed :(', 'error');
         } else {
           yield call(displayActionMessage, `:( Failed to update profile. ${e.message ? e.message : ''}`, 'error');
         }
+      } finally {
+        yield put(setLoading(false)); // ✅ Always execute this line, even if an error occurs
       }
       break;
     }

@@ -45,11 +45,19 @@ const ContactPage = () => {
   const saveContactAsVCF = () => {
     const vcfData = `
 BEGIN:VCARD
-VERSION:3.0
+VERSION:4.0
 FN:${contact.name}
-TEL:${contact.phone}
+TEL;TYPE=cell:${contact.phone}
 EMAIL:${contact.email}
 URL:${contact.website}
+URL;TYPE=facebook:${contact.facebook}
+URL;TYPE=instagram:${contact.instagram}
+PHOTO:${contact.avatar}
+ADR;TYPE=work:${contact.work_address}
+ORG:${contact.work}
+TITLE:${contact.title}
+URL;TYPE=portfolio:${contact.video}
+NOTE:${contact.note}
 END:VCARD
     `;
 

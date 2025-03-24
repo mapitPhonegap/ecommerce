@@ -92,7 +92,6 @@ function* authSaga({ type, payload }) {
         const user = yield call(supabase.createAccount, payload.email, payload.password);
         if (!user) throw error;
   
-        console.log(user);
         const fullname = payload.fullname
         .split(' ')
         .map((name) => name[0].toUpperCase() + name.substring(1))
@@ -179,7 +178,6 @@ function* authSaga({ type, payload }) {
         role: userRole,
         provider: payload?.provider || "email"
       }));
-    
       // Retrieve intended route or default to home/admin dashboard
       const intendedRoute = localStorage.getItem("intendedRoute") || "/";
       localStorage.removeItem("intendedRoute"); // Clean up after redirect

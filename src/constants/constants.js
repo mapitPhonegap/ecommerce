@@ -68,3 +68,21 @@ export const SET_REQUEST_STATUS = 'SET_REQUEST_STATUS';
 export const GET_CONTACT = 'GET_CONTACT';
 export const GET_CONTACT_SUCCESS = 'GET_CONTACT_SUCCESS';
 export const SET_CONTACT = 'SET_CONTACT';
+export const MALAYSIA_STATES = [
+    "Johor",
+    "Kedah",
+    "Kelantan",
+    "Malacca",
+    "Negeri Sembilan",
+    "Pahang",
+    "Penang",
+    "Perak",
+    "Perlis",
+    "Sabah",
+    "Sarawak",
+    "Selangor",
+    "Terengganu",
+    "Kuala Lumpur",
+    "Labuan",
+    "Putrajaya",
+  ];

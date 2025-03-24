@@ -6,6 +6,9 @@ module.exports = {
     extend: {},
   },
   plugins: [require("daisyui")],
+  corePlugins: {
+    animation: false, // Disable Tailwind animations globally
+  },
   daisyui: {
     themes: [ "light", "dark", "cupcake", "bumblebee", "emerald",
       "corporate", "synthwave", "retro", "cyberpunk",
