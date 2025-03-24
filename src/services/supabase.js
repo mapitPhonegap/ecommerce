@@ -3,29 +3,16 @@ import { supabaseConfig } from "./config";
 
 class SupabaseService {
   constructor() {
-    this.initSupabase();
-    
-    // ✅ Reinitialize Supabase when tab regains focus
-    window.addEventListener("focus", this.initSupabase);
-  }
-  
-  componentWillUnmount() {
-    window.removeEventListener("focus", this.initSupabase);
-  }
-  
-  initSupabase = () => {
     this.supabase = createClient(supabaseConfig.supabaseURL, supabaseConfig.anonKey, {
       auth: {
-        persistSession: true,
-        storage: localStorage,
+        persistSession: true,  
+        storage: localStorage, 
       }
     });
     this.auth = this.supabase.auth;
-    this.db = this.supabase;
-    console.log("🔄 Supabase client refreshed!");
-  };
+    this.db = this.supabase; // Supabase uses SQL-based queries
+  }
 
-  
   // AUTH ACTIONS ------------
 
   createAccount = async (email, password) => {
@@ -141,8 +128,8 @@ class SupabaseService {
   };
 
   updateProfile = async (id, updates) => {
-    console.log("Sending Supabase update request:", JSON.stringify(updates, null, 2));
-    await this.auth.getSession(); // Ensure we use the latest session
+    await supabase.auth.getSession();
+
     const { data, error } = await this.db.from("users").update(updates).eq("id", id).select("*").maybeSingle()
       .throwOnError(); // Forces error throwing if something is wrong; // Forces re-fetch
     if (error) {
