@@ -16,9 +16,10 @@ const useContact = (tagId) => {
       setError(null); // Reset error state
       try {
         const data = await supabase.getNfcContact(tagId);
-        dispatch(setContact({
-          ...data
-        }));
+        if (data?.users)
+          dispatch(setContact({
+            ...data.users
+          }));
       } catch (err) {
         setError(err.message || "Failed to fetch contact");
       } finally {
@@ -26,7 +27,7 @@ const useContact = (tagId) => {
       }
       };
     fetchContact();
-  }, [tagId, dispatch, contact]);   
+  }, [tagId, dispatch]);   
   return { contact, loading, error };
 };
 

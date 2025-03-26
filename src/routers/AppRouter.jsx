@@ -31,6 +31,7 @@ const AppRouter = () => {
         <Route component={view.ViewProduct} path={ROUTES.VIEW_PRODUCT} />
         <ClientRoute component={view.UserAccount} exact path={ROUTES.ACCOUNT} />
         <ClientRoute component={view.EditAccount} exact path={ROUTES.ACCOUNT_EDIT} />
+        <ClientRoute component={view.EditContact} exact path={ROUTES.CONTACT_EDIT} />
         <ClientRoute component={view.CheckOutStep1} path={ROUTES.CHECKOUT_STEP_1} />
         <ClientRoute component={view.CheckOutStep2} path={ROUTES.CHECKOUT_STEP_2} />
         <ClientRoute component={view.CheckOutStep3} path={ROUTES.CHECKOUT_STEP_3} />

@@ -3,7 +3,9 @@ import {
   SET_PROFILE,
   UPDATE_EMAIL,
   UPDATE_PROFILE,
-  UPDATE_PROFILE_SUCCESS
+  UPDATE_PROFILE_SUCCESS,
+  UPDATE_THEME,
+  UPDATE_THEME_SUCCESS
 } from '@/constants/constants';
 
 export const clearProfile = () => ({
@@ -34,5 +36,17 @@ export const updateProfile = (newProfile) => ({
 
 export const updateProfileSuccess = (updates) => ({
   type: UPDATE_PROFILE_SUCCESS,
+  payload: updates
+});
+
+export const updateTheme = (newTheme) => ({
+  type: UPDATE_THEME,
+  payload: {
+    theme: newTheme,
+  }
+});
+
+export const updateThemeSuccess = (updates) => ({
+  type: UPDATE_THEME_SUCCESS,
   payload: updates
 });

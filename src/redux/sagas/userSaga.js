@@ -1,6 +1,3 @@
-import { UPDATE_EMAIL, UPDATE_PROFILE } from '@/constants/constants';
-import { ACCOUNT } from '@/constants/routes';
-import { displayActionMessage } from '@/helpers/utils';
 import { call, put, select } from 'redux-saga/effects';
 import { history } from '@/routers/AppRouter';
 import supabase from '@/services/supabase';

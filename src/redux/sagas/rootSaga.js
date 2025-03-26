@@ -27,7 +27,8 @@ function* rootSaga() {
   ], productSaga);
   yield takeLatest([
     ACTION.UPDATE_EMAIL,
-    ACTION.UPDATE_PROFILE
+    ACTION.UPDATE_PROFILE,
+    ACTION.UPDATE_THEME
   ], profileSaga);
 }
 

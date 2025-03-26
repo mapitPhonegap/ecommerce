@@ -12,7 +12,7 @@ class SupabaseService {
     this.auth = this.supabase.auth;
     this.db = this.supabase; // Supabase uses SQL-based queries
   }
-
+  
   // AUTH ACTIONS ------------
 
   createAccount = async (email, password) => {
@@ -47,7 +47,7 @@ class SupabaseService {
   };
 
   getNfcContact = async (id) => {
-    const { data, error } = await this.db.from("nfc_tag_contacts").select("*, users(avatar, fullname)").eq("tag_id", id).limit(1).maybeSingle();
+    const { data, error } = await this.db.from("nfc_tags").select("*, users(avatar, fullname, email, video, bio, mobile, facebook, instagram, website, title, work, work_address, note, theme)").eq("id", id).limit(1).maybeSingle();
     if (error) {
       console.error("Error fetching nfc contact data:", error.message);
       return null;
@@ -128,7 +128,7 @@ class SupabaseService {
   };
 
   updateProfile = async (id, updates) => {
-    await supabase.auth.getSession();
+    await this.auth.getSession();
 
     const { data, error } = await this.db.from("users").update(updates).eq("id", id).select("*").maybeSingle()
       .throwOnError(); // Forces error throwing if something is wrong; // Forces re-fetch

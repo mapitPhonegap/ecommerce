@@ -14,6 +14,8 @@ import {
 import { setLoading, setRequestStatus } from '@/redux/actions/miscActions';
 import { history } from '@/routers/AppRouter';
 import supabase from '@/services/supabase';
+import firebase from '@/services/firebase';
+
 import {
   addProductSuccess,
   clearSearchState, editProductSuccess, getProductsSuccess,
@@ -21,21 +23,6 @@ import {
   searchProductSuccess
 } from '../actions/productActions';
 import { v4 as uuidv4 } from "uuid";
-
-const uploadImage = async (key, folder, file) => {
-  if (!supabase) {
-    console.error("Supabase is not initialized properly.");
-    return null;
-  }
-  
-  const filePath = `${folder}/${key}`;
-  const data = await supabase.storeImage('products', filePath, file);
-  return supabase.getPublicUrl('products', filePath);
-};
-
-const deleteImage = async (filePath) => {
-  await supabase.removeImage('products', filePath);
-};
 
 
 function* initRequest() {
@@ -84,20 +71,18 @@ function* productSaga({ type, payload }) {
           yield initRequest();
       
           const { imageCollection } = payload;
-          const key = uuidv4();
-          const downloadURL = yield call(uploadImage, key, "uploads", payload.image);
-          
+          const key = yield call(firebase.generateKey);
+          const downloadURL = yield call(firebase.storeImage, key, 'products', payload.image);
           const image = { id: key, url: downloadURL };
           let images = [];
       
           if (imageCollection.length !== 0) {
-            const imageKeys = yield all(imageCollection.map(() => uuidv4()));
-            const imageUrls = yield all(imageCollection.map((img, i) => uploadImage(imageKeys[i], "uploads", img.file)));
+            const imageKeys = yield all(imageCollection.map(() => firebase.generateKey));
+            const imageUrls = yield all(imageCollection.map((img, i) => firebase.storeImage(imageKeys[i](), 'products', img.file)));
             images = imageUrls.map((url, i) => ({
-              id: imageKeys[i],
+              id: imageKeys[i](),
               url
             }));
-            
           }
       
           const product = {
@@ -128,12 +113,12 @@ function* productSaga({ type, payload }) {
       
           if (image instanceof File) {
             try {
-              yield call(deleteImage, `products/${payload.id}`);
+              yield call(firebase.deleteImage, payload.id);
             } catch (e) {
               console.error("Failed to delete image ", e);
             }
       
-            const url = yield call(uploadImage, payload.id, "products", image);
+            const url = yield call(firebase.storeImage, payload.id, 'products', image);           
             newUpdates = { ...newUpdates, image: url };
           }
       
@@ -149,8 +134,8 @@ function* productSaga({ type, payload }) {
               }
             });
       
-            const imageKeys = yield all(newUploads.map(() => uuidv4()));
-            const imageUrls = yield all(newUploads.map((img, i) => uploadImage(imageKeys[i], "products", img.file)));
+            const imageKeys = yield all(newUploads.map(() => firebase.generateKey));
+            const imageUrls = yield all(newUploads.map((img, i) => firebase.storeImage(imageKeys[i](), 'products', img.file)));
             const images = imageUrls.map((url, i) => ({
               id: imageKeys[i],
               url

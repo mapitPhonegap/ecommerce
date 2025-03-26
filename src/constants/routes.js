@@ -4,6 +4,7 @@ export const FEATURED_PRODUCTS = '/featured';
 export const RECOMMENDED_PRODUCTS = '/recommended';
 export const ACCOUNT = '/account';
 export const ACCOUNT_EDIT = '/account/edit';
+export const CONTACT_EDIT = '/acount/contact/edit';
 export const ADMIN_DASHBOARD = '/admin/dashboard';
 export const ADMIN_PRODUCTS = '/admin/products';
 export const ADMIN_USERS = '/admin/users';

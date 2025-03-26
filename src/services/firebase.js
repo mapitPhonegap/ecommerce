@@ -1,16 +1,11 @@
-import app from "firebase/app";
-import "firebase/auth";
-import "firebase/firestore";
-import "firebase/storage";
-import firebaseConfig from "./config";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { initializeApp } from "firebase/app";
+import {firebaseConfig} from "./config";
 
 class Firebase {
   constructor() {
-    app.initializeApp(firebaseConfig);
-
-    this.storage = app.storage();
-    this.db = app.firestore();
-    this.auth = app.auth();
+    const app = initializeApp(firebaseConfig); // Initialize Firebase app
+    this.storage = getStorage(app); // Get storage instance
   }
 
   // AUTH ACTIONS ------------
@@ -250,10 +245,25 @@ class Firebase {
   generateKey = () => this.db.collection("products").doc().id;
 
   storeImage = async (id, folder, imageFile) => {
-    const snapshot = await this.storage.ref(folder).child(id).put(imageFile);
-    const downloadURL = await snapshot.ref.getDownloadURL();
-
-    return downloadURL;
+    if (!id || !folder || !imageFile) {
+      throw new Error("Invalid parameters");
+    }
+  
+    try {
+      const fileExtension = imageFile.name.split('.').pop(); // Get file extension
+      const fileName = `${id}.${fileExtension}`; // Save as user_id.jpg/png/etc.
+      const fileRef = ref(this.storage, `${folder}`);
+  
+      // Upload the file
+      await uploadBytes(fileRef, imageFile);
+  
+      // Get and return the download URL
+      const downloadURL = await getDownloadURL(fileRef);
+      return downloadURL;
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      throw error;
+    }
   };
 
   deleteImage = (id) => this.storage.ref("products").child(id).delete();
